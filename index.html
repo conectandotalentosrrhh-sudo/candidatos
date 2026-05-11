@@ -1,306 +1,73 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conectando Talentos — Candidatos</title>
-<style>
-  :root {
-    --teal: #2a9d8f;
-    --aqua: #48cae4;
-    --coral: #e76f51;
-    --bg: #f0f7f7;
-    --card: #ffffff;
-    --text: #264653;
-    --muted: #6c757d;
-    --border: #e0eeee;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  header { background: var(--teal); padding: 16px 24px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-  header h1 { color: white; font-size: 1.2rem; font-weight: 700; }
-  header span { color: rgba(255,255,255,0.8); font-size: 0.85rem; }
-  .logo { width: 38px; height: 38px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-  .filtros { background: white; padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
-  .filtro-group { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
-  .filtro-group label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .filtro-group select, .filtro-group input { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--text); background: var(--bg); outline: none; }
-  .filtro-group select:focus, .filtro-group input:focus { border-color: var(--teal); }
-  .btn-limpiar { padding: 7px 16px; background: var(--border); color: var(--muted); border: none; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-weight: 600; height: 34px; align-self: flex-end; }
-  .btn-limpiar:hover { background: #c8dcdc; }
-  .contador { margin-left: auto; align-self: flex-end; font-size: 0.82rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
-  .grid { padding: 20px 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-  .card { background: var(--card); border-radius: 14px; border: 1.5px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: box-shadow 0.2s; }
-  .card:hover { box-shadow: 0 4px 16px rgba(42,157,143,0.15); border-color: var(--aqua); }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .card-nombre { font-size: 1rem; font-weight: 700; color: var(--text); }
-  .badge-prioridad { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
-  .badge-ALTA { background: #fde8e8; color: #c0392b; }
-  .badge-MEDIA { background: #fef3cd; color: #856404; }
-  .badge-BAJA { background: #e8f5e9; color: #2e7d32; }
-  .badge-default { background: var(--bg); color: var(--muted); }
-  .card-area { font-size: 0.82rem; font-weight: 600; color: var(--teal); }
-  .card-info { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; }
-  .info-item { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--muted); }
-  .card-exp { font-size: 0.78rem; color: var(--muted); background: var(--bg); padding: 7px 10px; border-radius: 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-gestion { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .gestion-item { display: flex; flex-direction: column; gap: 3px; }
-  .gestion-item label { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; }
-  .gestion-item select, .gestion-item input { padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.78rem; color: var(--text); background: white; outline: none; width: 100%; }
-  .gestion-item select:focus { border-color: var(--teal); }
-  .notas-item { grid-column: span 2; }
-  .notas-item textarea { width: 100%; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.78rem; color: var(--text); resize: vertical; min-height: 50px; font-family: inherit; outline: none; }
-  .notas-item textarea:focus { border-color: var(--teal); }
-  .card-acciones { display: flex; gap: 8px; }
-  .btn-accion { flex: 1; padding: 8px 4px; border: none; border-radius: 9px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none; transition: opacity 0.2s; }
-  .btn-accion:hover { opacity: 0.85; }
-  .btn-cv { background: #e8f5e9; color: #2e7d32; }
-  .btn-wa { background: #e8f5e9; color: #27ae60; }
-  .btn-meet { background: #e8f0fe; color: #1a73e8; }
-  .btn-accion.disabled { background: var(--bg); color: #ccc; pointer-events: none; }
-  .loading { text-align: center; padding: 60px; color: var(--muted); font-size: 1rem; }
-  .loading .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .empty { text-align: center; padding: 60px; color: var(--muted); }
-  .empty .icon { font-size: 3rem; margin-bottom: 10px; }
-</style>
-</head>
-<body>
+const SHEET_ID = "12CRWe7xqmgRBHgxB773fK78DwRjBYHDcDsN61Y4xlS4";
+const SHEET_NAME = "Respuestas de formulario 1";
 
-<header>
-  <div class="logo">🤝</div>
-  <div>
-    <h1>Conectando Talentos</h1>
-    <span>Panel de Candidatos</span>
-  </div>
-</header>
-
-<div class="filtros">
-  <div class="filtro-group">
-    <label>🏷️ Área</label>
-    <select id="f-area"><option value="">Todas</option></select>
-  </div>
-  <div class="filtro-group">
-    <label>💼 Experiencia</label>
-    <select id="f-exp"><option value="">Todas</option></select>
-  </div>
-  <div class="filtro-group">
-    <label>🎓 Estudios</label>
-    <select id="f-estudios"><option value="">Todos</option></select>
-  </div>
-  <div class="filtro-group">
-    <label>📍 Localidad</label>
-    <select id="f-localidad"><option value="">Todas</option></select>
-  </div>
-  <div class="filtro-group">
-    <label>⭐ Estado</label>
-    <select id="f-estado"><option value="">Todos</option></select>
-  </div>
-  <div class="filtro-group">
-    <label>🔍 Buscar nombre</label>
-    <input type="text" id="f-nombre" placeholder="Escribí un nombre...">
-  </div>
-  <button class="btn-limpiar" onclick="limpiarFiltros()">✖ Limpiar</button>
-  <span class="contador" id="contador"></span>
-</div>
-
-<div class="grid" id="grid">
-  <div class="loading"><div class="spinner"></div>Cargando candidatos...</div>
-</div>
-
-<script>
-const PUENTE = "https://script.google.com/macros/s/AKfycbxzyAbVk6Qn6Fad8-lkGlhrewUgAlD35s2fXJXrRjNtDc-jRnU3I28SGkC_v4OrT60/exec";
-
-const COL = {
-  nombre: "👤 Nombre y Apellido ",
-  tel: "📱 Teléfono / WhatsApp",
-  email: "📧 Email",
-  edad: "EDAD",
-  localidad: "📍Localidad donde vivís actualmente",
-  area: "AREA A LA QUE QUERES APLICAR",
-  expDesc: "  ¿Cuál es tu experiencia en esa área?  ",
-  expAnios: "💼 Años de experiencia laboral total",
-  estudios: "🎓 Nivel de estudios",
-  salario: "💰 Pretensión salarial bruta mensual",
-  disponibilidad: "🕐Disponibilidad horaria",
-  incorporacion: "📅 Disponibilidad para incorporarte",
-  cvCol: "ABRIR CV",
-  cvForm: "Carga tu CV ( Subí tu CV actualizado en PDF. Archivos en Word no serán aceptados.)",
-  estado: "ESTADO",
-  calificacion: "CALIFICACIÓN",
-  notas: "NOTAS DE ENTREVISTA",
-  prioridad: "PRIORIDAD",
-  whatsapp: "WHATSAPP",
-  entrevista: "ENTREVISTA",
-  informe: "INFORME / NOTAS.",
-  feedback: "FEEDBACK WHATSAPP"
-};
-
-const ESTADOS = ["","NUEVO","EN PROCESO","ENTREVISTADO","SELECCIONADO","DESCARTADO","EN ESPERA"];
-const CALIFICACIONES = ["","⭐","⭐⭐","⭐⭐⭐","⭐⭐⭐⭐","⭐⭐⭐⭐⭐"];
-const PRIORIDADES = ["","ALTA","MEDIA","BAJA"];
-
-let todos = [];
-
-// JSONP: esquiva el bloqueo CORS de Google
-function jsonp(url) {
-  return new Promise((resolve, reject) => {
-    const cb = "cb_" + Date.now();
-    const script = document.createElement("script");
-    const timeout = setTimeout(() => {
-      delete window[cb];
-      document.body.removeChild(script);
-      reject(new Error("Timeout"));
-    }, 15000);
-    window[cb] = (data) => {
-      clearTimeout(timeout);
-      delete window[cb];
-      document.body.removeChild(script);
-      resolve(data);
-    };
-    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
-    script.onerror = () => { clearTimeout(timeout); reject(new Error("Script error")); };
-    document.body.appendChild(script);
-  });
-}
-
-async function cargar() {
+function doGet(e) {
+  const callback = e.parameter.callback;
+  const action = e.parameter.action || "getCandidatos";
+  
+  let result;
   try {
-    const j = await jsonp(PUENTE + "?action=getCandidatos");
-    todos = j.data || [];
-    poblarFiltros();
-    renderizar();
-  } catch(e) {
-    document.getElementById("grid").innerHTML = `<div class="empty"><div class="icon">⚠️</div><p>Error al cargar. Revisá la conexión.</p><small style="color:#aaa">${e.message}</small></div>`;
+    if (action === "getCandidatos") {
+      result = { ok: true, data: getCandidatos() };
+    } else if (action === "updateCandidato") {
+      const fila = parseInt(e.parameter.fila);
+      const campo = e.parameter.campo;
+      const valor = e.parameter.valor;
+      updateCandidato(fila, campo, valor);
+      result = { ok: true };
+    } else {
+      result = { ok: false, error: "Acción no reconocida" };
+    }
+  } catch (err) {
+    result = { ok: false, error: err.toString() };
   }
+  
+  // JSONP response
+  return ContentService.createTextOutput(
+    callback + '(' + JSON.stringify(result) + ')'
+  ).setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
-function poblarFiltros() {
-  const sel = (id, col) => {
-    const el = document.getElementById(id);
-    const vals = [...new Set(todos.map(c => c[col]).filter(Boolean))].sort();
-    vals.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; el.appendChild(o); });
-  };
-  sel("f-area", COL.area);
-  sel("f-exp", COL.expAnios);
-  sel("f-estudios", COL.estudios);
-  sel("f-localidad", COL.localidad);
-  sel("f-estado", COL.estado);
-  ["f-area","f-exp","f-estudios","f-localidad","f-estado"].forEach(id =>
-    document.getElementById(id).addEventListener("change", renderizar));
-  document.getElementById("f-nombre").addEventListener("input", renderizar);
-}
-
-function filtrados() {
-  const v = id => document.getElementById(id).value;
-  return todos.filter(c =>
-    (!v("f-area") || c[COL.area] === v("f-area")) &&
-    (!v("f-exp") || c[COL.expAnios] === v("f-exp")) &&
-    (!v("f-estudios") || c[COL.estudios] === v("f-estudios")) &&
-    (!v("f-localidad") || c[COL.localidad] === v("f-localidad")) &&
-    (!v("f-estado") || c[COL.estado] === v("f-estado")) &&
-    (!v("f-nombre") || (c[COL.nombre]||"").toLowerCase().includes(v("f-nombre").toLowerCase()))
-  );
-}
-
-function limpiarFiltros() {
-  ["f-area","f-exp","f-estudios","f-localidad","f-estado"].forEach(id => document.getElementById(id).value = "");
-  document.getElementById("f-nombre").value = "";
-  renderizar();
-}
-
-function renderizar() {
-  const lista = filtrados();
-  document.getElementById("contador").textContent = `${lista.length} candidato${lista.length !== 1 ? "s" : ""}`;
-  const grid = document.getElementById("grid");
-  if (!lista.length) { grid.innerHTML = `<div class="empty"><div class="icon">🔍</div>No hay candidatos con esos filtros.</div>`; return; }
-  grid.innerHTML = lista.map(tarjeta).join("");
-}
-
-function extraerLink(celda) {
-  if (!celda) return null;
-  const m = String(celda).match(/https?:\/\/[^\s"')]+/);
-  return m ? m[0] : null;
-}
-
-function linkWA(tel) {
-  if (!tel) return null;
-  const n = String(tel).replace(/\D/g, "").replace(/^0/, "");
-  if (!n) return null;
-  const num = n.startsWith("54") ? n : "54" + n;
-  return `https://wa.me/${num}`;
-}
-
-function tarjeta(c) {
-  const fila = c["__fila"];
-  const pri = (c[COL.prioridad]||"").toUpperCase().trim();
-  const badgeClass = ["ALTA","MEDIA","BAJA"].includes(pri) ? `badge-${pri}` : "badge-default";
-  const cvLink = extraerLink(c[COL.cvCol]) || extraerLink(c[COL.cvForm]);
-  const waLink = linkWA(c[COL.tel]);
-  const meetLink = extraerLink(c[COL.entrevista]);
-
-  const opts = (arr, val) => arr.map(e => `<option value="${e}" ${(val||"")=== e?"selected":""}>${e||"—"}</option>`).join("");
-
-  return `
-  <div class="card" id="card-${fila}">
-    <div class="card-header">
-      <div class="card-nombre">${c[COL.nombre]||"Sin nombre"}</div>
-      <span class="badge-prioridad ${badgeClass}">${pri||"—"}</span>
-    </div>
-    <div class="card-area">🏷️ ${c[COL.area]||"—"}</div>
-    <div class="card-info">
-      <div class="info-item"><span>📅</span><span>${c[COL.edad]||"—"} años</span></div>
-      <div class="info-item"><span>📍</span><span>${c[COL.localidad]||"—"}</span></div>
-      <div class="info-item"><span>💼</span><span>${c[COL.expAnios]||"—"}</span></div>
-      <div class="info-item"><span>🎓</span><span>${c[COL.estudios]||"—"}</span></div>
-      <div class="info-item"><span>💰</span><span>${c[COL.salario]||"—"}</span></div>
-      <div class="info-item"><span>🕐</span><span>${c[COL.disponibilidad]||"—"}</span></div>
-    </div>
-    ${c[COL.expDesc] ? `<div class="card-exp">💬 ${c[COL.expDesc]}</div>` : ""}
-    <div class="card-gestion">
-      <div class="gestion-item">
-        <label>📋 Estado</label>
-        <select onchange="guardar(${fila},'${COL.estado}',this.value,this)">${opts(ESTADOS, c[COL.estado])}</select>
-      </div>
-      <div class="gestion-item">
-        <label>⭐ Calificación</label>
-        <select onchange="guardar(${fila},'${COL.calificacion}',this.value,this)">${opts(CALIFICACIONES, c[COL.calificacion])}</select>
-      </div>
-      <div class="gestion-item">
-        <label>🔥 Prioridad</label>
-        <select onchange="guardar(${fila},'${COL.prioridad}',this.value,this)">${opts(PRIORIDADES, c[COL.prioridad])}</select>
-      </div>
-      <div class="gestion-item">
-        <label>📅 Incorporación</label>
-        <div style="font-size:0.78rem;padding:5px 0;color:var(--muted)">${c[COL.incorporacion]||"—"}</div>
-      </div>
-      <div class="gestion-item notas-item">
-        <label>📝 Notas de entrevista</label>
-        <textarea onblur="guardar(${fila},'${COL.notas}',this.value,this)">${c[COL.notas]||""}</textarea>
-      </div>
-      <div class="gestion-item notas-item">
-        <label>💬 Feedback WhatsApp</label>
-        <textarea onblur="guardar(${fila},'${COL.feedback}',this.value,this)">${c[COL.feedback]||""}</textarea>
-      </div>
-    </div>
-    <div class="card-acciones">
-      ${cvLink ? `<a href="${cvLink}" target="_blank" class="btn-accion btn-cv">📄 Ver CV</a>` : `<span class="btn-accion disabled">📄 Sin CV</span>`}
-      ${waLink ? `<a href="${waLink}" target="_blank" class="btn-accion btn-wa">💬 WhatsApp</a>` : `<span class="btn-accion disabled">💬 Sin tel</span>`}
-      ${meetLink ? `<a href="${meetLink}" target="_blank" class="btn-accion btn-meet">💻 Meet</a>` : `<span class="btn-accion disabled">💻 Sin meet</span>`}
-    </div>
-  </div>`;
-}
-
-async function guardar(fila, campo, valor, el) {
-  try {
-    await jsonp(`${PUENTE}?action=updateCandidato&fila=${fila}&campo=${encodeURIComponent(campo)}&valor=${encodeURIComponent(valor)}`);
-    if (el) { el.style.borderColor = "#27ae60"; setTimeout(() => el.style.borderColor = "", 1500); }
-  } catch(e) {
-    alert("Error al guardar. Intentá de nuevo.");
+function getCandidatos() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  
+  if (!sheet) {
+    throw new Error("Hoja no encontrada: " + SHEET_NAME);
   }
+  
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const rows = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = {};
+    for (let j = 0; j < headers.length; j++) {
+      row[headers[j]] = data[i][j];
+    }
+    row["__fila"] = i + 1;
+    rows.push(row);
+  }
+
+  return rows;
 }
 
-cargar();
-</script>
-</body>
-</html>
+function updateCandidato(fila, campo, valor) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  
+  let colIndex = -1;
+  for (let i = 0; i < headers.length; i++) {
+    if (headers[i] === campo) {
+      colIndex = i;
+      break;
+    }
+  }
+  
+  if (colIndex === -1) {
+    throw new Error("Columna no encontrada: " + campo);
+  }
+  
+  sheet.getRange(fila, colIndex + 1).setValue(valor);
+}
