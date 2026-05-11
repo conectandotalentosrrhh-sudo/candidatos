@@ -1,123 +1,536 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Selección - Conectando Talentos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .header-ct { background: #003366; color: white; padding: 20px; border-bottom: 5px solid #00aaff; margin-bottom: 30px; }
-        .card { border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; }
-        .table thead { background-color: #003366; color: white; }
-        .btn-cv { background-color: #00aaff; color: white; border: none; }
-        .btn-cv:hover { background-color: #0088cc; color: white; }
-        .loading-spinner { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conectando Talentos — Panel de Candidatos</title>
+<style>
+  :root {
+    --teal: #2a9d8f;
+    --aqua: #48cae4;
+    --coral: #e76f51;
+    --bg: #f0f7f7;
+    --card: #ffffff;
+    --text: #264653;
+    --muted: #6c757d;
+    --border: #e0eeee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  
+  header { 
+    background: linear-gradient(135deg, var(--teal) 0%, var(--aqua) 100%);
+    padding: 20px 24px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+  }
+  header h1 { color: white; font-size: 1.3rem; font-weight: 700; }
+  header span { color: rgba(255,255,255,0.85); font-size: 0.9rem; }
+  .logo { width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+  
+  .filtros { 
+    background: white; 
+    padding: 18px 24px; 
+    border-bottom: 2px solid var(--border); 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 12px; 
+    align-items: flex-end;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .filtro-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; 
+    min-width: 160px; 
+  }
+  .filtro-group label { 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    letter-spacing: 0.6px; 
+  }
+  .filtro-group select, .filtro-group input { 
+    padding: 8px 12px; 
+    border: 1.5px solid var(--border); 
+    border-radius: 8px; 
+    font-size: 0.9rem; 
+    color: var(--text); 
+    background: var(--bg); 
+    outline: none; 
+  }
+  .filtro-group select:focus, .filtro-group input:focus { 
+    border-color: var(--teal); 
+    box-shadow: 0 0 0 3px rgba(42,157,143,0.1);
+  }
+  
+  .btn-limpiar { 
+    padding: 8px 16px; 
+    background: #f0f0f0; 
+    color: var(--muted); 
+    border: 1.5px solid var(--border); 
+    border-radius: 8px; 
+    font-size: 0.85rem; 
+    cursor: pointer; 
+    font-weight: 600; 
+    height: 36px; 
+    align-self: flex-end; 
+    transition: all 0.2s;
+  }
+  .btn-limpiar:hover { background: #e0e0e0; }
+  
+  .contador { 
+    margin-left: auto; 
+    align-self: flex-end; 
+    font-size: 0.85rem; 
+    color: var(--teal); 
+    font-weight: 700; 
+    white-space: nowrap; 
+  }
+  
+  .grid { 
+    padding: 24px; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
+    gap: 18px; 
+  }
+  
+  .card { 
+    background: var(--card); 
+    border-radius: 12px; 
+    border: 1.5px solid var(--border); 
+    padding: 18px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+    transition: all 0.3s; 
+  }
+  .card:hover { 
+    box-shadow: 0 8px 24px rgba(42,157,143,0.15); 
+    border-color: var(--aqua); 
+    transform: translateY(-2px);
+  }
+  
+  .card-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    gap: 12px; 
+  }
+  .card-nombre { 
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    color: var(--text); 
+    line-height: 1.3;
+  }
+  
+  .badge-prioridad { 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    padding: 4px 10px; 
+    border-radius: 20px; 
+    white-space: nowrap; 
+  }
+  .badge-ALTA { background: #fde8e8; color: #c0392b; }
+  .badge-MEDIA { background: #fef3cd; color: #856404; }
+  .badge-BAJA { background: #e8f5e9; color: #2e7d32; }
+  .badge-default { background: var(--bg); color: var(--muted); }
+  
+  .card-area { 
+    font-size: 0.9rem; 
+    font-weight: 700; 
+    color: var(--teal); 
+    background: rgba(42,157,143,0.08);
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    width: fit-content;
+  }
+  
+  .card-info { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 8px 10px; 
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .info-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    font-size: 0.8rem; 
+    color: var(--muted); 
+  }
+  .info-item strong { color: var(--text); font-weight: 600; }
+  
+  .card-exp { 
+    font-size: 0.8rem; 
+    color: var(--muted); 
+    background: var(--bg); 
+    padding: 8px 10px; 
+    border-radius: 8px; 
+    line-height: 1.5; 
+    display: -webkit-box; 
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical; 
+    overflow: hidden; 
+    border-left: 3px solid var(--coral);
+  }
+  
+  .card-gestion { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 8px; 
+    padding-top: 10px;
+  }
+  .gestion-item { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; 
+  }
+  .gestion-item label { 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+  }
+  .gestion-item select, .gestion-item input { 
+    padding: 6px 8px; 
+    border: 1.5px solid var(--border); 
+    border-radius: 6px; 
+    font-size: 0.8rem; 
+    color: var(--text); 
+    background: white; 
+    outline: none; 
+    width: 100%; 
+  }
+  .gestion-item select:focus, .gestion-item input:focus { 
+    border-color: var(--teal);
+    box-shadow: 0 0 0 2px rgba(42,157,143,0.1);
+  }
+  
+  .notas-item { grid-column: span 2; }
+  .notas-item textarea { 
+    width: 100%; 
+    padding: 6px 8px; 
+    border: 1.5px solid var(--border); 
+    border-radius: 6px; 
+    font-size: 0.78rem; 
+    color: var(--text); 
+    resize: vertical; 
+    min-height: 50px; 
+    font-family: inherit; 
+    outline: none; 
+  }
+  .notas-item textarea:focus { 
+    border-color: var(--teal);
+    box-shadow: 0 0 0 2px rgba(42,157,143,0.1);
+  }
+  
+  .card-acciones { 
+    display: flex; 
+    gap: 8px; 
+    margin-top: 8px;
+  }
+  .btn-accion { 
+    flex: 1; 
+    padding: 8px; 
+    border: none; 
+    border-radius: 8px; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 4px; 
+    text-decoration: none; 
+    transition: all 0.2s; 
+  }
+  .btn-accion:hover { opacity: 0.9; transform: scale(1.02); }
+  .btn-cv { background: #e8f5e9; color: #2e7d32; }
+  .btn-wa { background: #e8f5e9; color: #27ae60; }
+  .btn-meet { background: #e8f0fe; color: #1a73e8; }
+  .btn-accion.disabled { background: #f5f5f5; color: #ccc; pointer-events: none; }
+  
+  .loading { 
+    text-align: center; 
+    padding: 80px 20px; 
+    color: var(--muted); 
+    font-size: 1rem; 
+  }
+  .loading .spinner { 
+    width: 50px; 
+    height: 50px; 
+    border: 4px solid var(--border); 
+    border-top-color: var(--teal); 
+    border-radius: 50%; 
+    animation: spin 0.8s linear infinite; 
+    margin: 0 auto 20px; 
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  
+  .empty { 
+    text-align: center; 
+    padding: 80px 20px; 
+    color: var(--muted); 
+  }
+  .empty .icon { 
+    font-size: 4rem; 
+    margin-bottom: 12px; 
+  }
+</style>
 </head>
 <body>
 
-<div class="header-ct text-center">
-    <h1>CONECTANDO TALENTOS</h1>
-    <p>Gestión de Candidatos en Tiempo Real</p>
+<header>
+  <div class="logo">🤝</div>
+  <div>
+    <h1>Conectando Talentos</h1>
+    <span>Panel de Gestión de Candidatos</span>
+  </div>
+</header>
+
+<div class="filtros">
+  <div class="filtro-group">
+    <label>🏷️ Área</label>
+    <select id="f-area"><option value="">Todas</option></select>
+  </div>
+  <div class="filtro-group">
+    <label>💼 Experiencia (años)</label>
+    <select id="f-exp"><option value="">Todas</option></select>
+  </div>
+  <div class="filtro-group">
+    <label>📍 Localidad</label>
+    <select id="f-localidad"><option value="">Todas</option></select>
+  </div>
+  <div class="filtro-group">
+    <label>🎓 Estudios</label>
+    <select id="f-estudios"><option value="">Todos</option></select>
+  </div>
+  <div class="filtro-group">
+    <label>⭐ Edad</label>
+    <select id="f-edad"><option value="">Todas</option></select>
+  </div>
+  <div class="filtro-group">
+    <label>📋 Estado</label>
+    <select id="f-estado"><option value="">Todos</option></select>
+  </div>
+  <div class="filtro-group" style="min-width: 200px;">
+    <label>🔍 Buscar nombre</label>
+    <input type="text" id="f-nombre" placeholder="Escribí un nombre...">
+  </div>
+  <button class="btn-limpiar" onclick="limpiarFiltros()">✖ Limpiar filtros</button>
+  <span class="contador" id="contador"></span>
 </div>
 
-<div class="container-fluid px-4">
-    <div class="card p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="text-secondary m-0">Base de Candidatos</h3>
-            <button onclick="cargarCandidatos()" class="btn btn-primary">🔄 Actualizar Tabla</button>
-        </div>
-
-        <div id="statusMessage" class="alert alert-info text-center">Cargando datos...</div>
-
-        <div class="table-responsive">
-            <table class="table table-hover align-middle" id="tablaCandidatos" style="display:none;">
-                <thead>
-                    <tr>
-                        <th>Candidato</th>
-                        <th>Área de Interés</th>
-                        <th>Localidad</th>
-                        <th>Estado actual</th>
-                        <th>CV</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpoTabla"></tbody>
-            </table>
-        </div>
-    </div>
+<div class="grid" id="grid">
+  <div class="loading"><div class="spinner"></div>Cargando candidatos...</div>
 </div>
 
 <script>
-    /* PASO ÚNICO: 
-       Copiá la URL que te dio Google Apps Script (la que termina en /exec) 
-       y pegala acá abajo entre las comillas.
-    */
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzEHic-PNj7_z2CTmNkwDyQVUyur6ni9xkGQkGCwDakfGHBfjCUa17RLNsjop5JBzI/exec";
+const PUENTE = "https://script.google.com/macros/s/AKfycbzEHic-PNj7_z2CTmNkwDyQVUyur6ni9xkGQkGCwDakfGHBfjCUa17RLNsjop5JBzI/exec";
 
-    async function cargarCandidatos() {
-        if (WEB_APP_URL.includes("TU_URL")) {
-            document.getElementById('statusMessage').innerHTML = "⚠️ Error: Falta pegar la URL de Google en el código (Línea 56).";
-            document.getElementById('statusMessage').classList.replace('alert-info', 'alert-danger');
-            return;
-        }
+const COL = {
+  nombre: "👤 Nombre y Apellido ",
+  tel: "📱 Teléfono / WhatsApp",
+  email: "📧 Email",
+  edad: "EDAD",
+  localidad: "📍Localidad donde vivís actualmente",
+  area: "AREA A LA QUE QUERES APLICAR",
+  expDesc: "  ¿Cuál es tu experiencia en esa área?  ",
+  expAnios: "💼 Años de experiencia laboral total",
+  estudios: "🎓 Nivel de estudios",
+  salario: "💰 Pretensión salarial bruta mensual",
+  disponibilidad: "🕐Disponibilidad horaria",
+  incorporacion: "📅 Disponibilidad para incorporarte",
+  cvForm: "Carga tu CV ( Subí tu CV actualizado en PDF. Archivos en Word no serán aceptados.)",
+  estado: "ESTADO",
+  calificacion: "CALIFICACIÓN",
+  notas: "NOTAS DE ENTREVISTA",
+  prioridad: "PRIORIDAD",
+  whatsapp: "WHATSAPP",
+  entrevista: "ENTREVISTA",
+  feedback: "FEEDBACK WHATSAPP"
+};
 
-        document.getElementById('statusMessage').style.display = "block";
-        document.getElementById('statusMessage').innerHTML = "⏳ Obteniendo datos de Google Sheets...";
-        
-        try {
-            const response = await fetch(WEB_APP_URL);
-            const result = await response.json();
-            
-            if (result.ok) {
-                renderizarTabla(result.data);
-                document.getElementById('statusMessage').style.display = "none";
-                document.getElementById('tablaCandidatos').style.display = "table";
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (e) {
-            document.getElementById('statusMessage').innerHTML = "❌ Error de conexión: Asegurate de haber publicado la App Script como 'Cualquiera'.";
-            document.getElementById('statusMessage').classList.replace('alert-info', 'alert-danger');
-        }
-    }
+const ESTADOS = ["","NUEVO","EN PROCESO","ENTREVISTADO","SELECCIONADO","DESCARTADO","EN ESPERA"];
+const CALIFICACIONES = ["","⭐","⭐⭐","⭐⭐⭐","⭐⭐⭐⭐","⭐⭐⭐⭐⭐"];
+const PRIORIDADES = ["","ALTA","MEDIA","BAJA"];
 
-    function renderizarTabla(datos) {
-        const cuerpo = document.getElementById('cuerpoTabla');
-        cuerpo.innerHTML = datos.map(c => `
-            <tr>
-                <td><strong>${c['👤 Nombre y Apellido'] || 'Sin nombre'}</strong></td>
-                <td>${c['AREA A LA QUE QUERES APLICAR'] || '-'}</td>
-                <td>${c['📍Localidad donde vivís actualmente'] || '-'}</td>
-                <td>
-                    <select class="form-select form-select-sm" onchange="actualizarEstado(${c.__fila}, this.value)">
-                        <option value="NUEVO" ${c.ESTADO === 'NUEVO' ? 'selected' : ''}>NUEVO</option>
-                        <option value="ENTREVISTADO" ${c.ESTADO === 'ENTREVISTADO' ? 'selected' : ''}>ENTREVISTADO</option>
-                        <option value="RECHAZADO" ${c.ESTADO === 'RECHAZADO' ? 'selected' : ''}>RECHAZADO</option>
-                    </select>
-                </td>
-                <td>
-                    ${c['ABRIR CV'] ? `<a href="${c['ABRIR CV']}" target="_blank" class="btn btn-sm btn-cv">Ver PDF</a>` : 'No subió'}
-                </td>
-            </tr>
-        `).join('');
-    }
+let todos = [];
 
-    async function actualizarEstado(fila, nuevoValor) {
-        const url = `${WEB_APP_URL}?action=updateCandidato&fila=${fila}&campo=ESTADO&valor=${encodeURIComponent(nuevoValor)}`;
-        try {
-            // Usamos mode no-cors para evitar problemas de permisos al actualizar
-            fetch(url, { mode: 'no-cors' });
-            console.log("Actualizando fila " + fila + " a " + nuevoValor);
-        } catch (e) {
-            alert("No se pudo actualizar el estado.");
-        }
-    }
+function jsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cb = "cb_" + Date.now();
+    const script = document.createElement("script");
+    const timeout = setTimeout(() => {
+      delete window[cb];
+      document.body.removeChild(script);
+      reject(new Error("Timeout"));
+    }, 15000);
+    window[cb] = (data) => {
+      clearTimeout(timeout);
+      delete window[cb];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
+    script.onerror = () => { clearTimeout(timeout); reject(new Error("Error de conexión")); };
+    document.body.appendChild(script);
+  });
+}
 
-    // Iniciar carga al abrir la página
-    window.onload = cargarCandidatos;
+async function cargar() {
+  try {
+    const j = await jsonp(PUENTE + "?action=getCandidatos");
+    todos = j.data || [];
+    poblarFiltros();
+    renderizar();
+  } catch(e) {
+    document.getElementById("grid").innerHTML = `<div class="empty"><div class="icon">⚠️</div><p>Error al cargar candidatos</p><small style="color:#aaa">${e.message}</small></div>`;
+  }
+}
+
+function poblarFiltros() {
+  const sel = (id, col) => {
+    const el = document.getElementById(id);
+    const vals = [...new Set(todos.map(c => c[col]).filter(Boolean))].sort();
+    vals.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; el.appendChild(o); });
+  };
+  sel("f-area", COL.area);
+  sel("f-exp", COL.expAnios);
+  sel("f-localidad", COL.localidad);
+  sel("f-estudios", COL.estudios);
+  sel("f-edad", COL.edad);
+  sel("f-estado", COL.estado);
+  
+  ["f-area","f-exp","f-localidad","f-estudios","f-edad","f-estado"].forEach(id =>
+    document.getElementById(id).addEventListener("change", renderizar));
+  document.getElementById("f-nombre").addEventListener("input", renderizar);
+}
+
+function filtrados() {
+  const v = id => document.getElementById(id).value;
+  return todos.filter(c =>
+    (!v("f-area") || c[COL.area] === v("f-area")) &&
+    (!v("f-exp") || c[COL.expAnios] === v("f-exp")) &&
+    (!v("f-localidad") || c[COL.localidad] === v("f-localidad")) &&
+    (!v("f-estudios") || c[COL.estudios] === v("f-estudios")) &&
+    (!v("f-edad") || c[COL.edad] === v("f-edad")) &&
+    (!v("f-estado") || c[COL.estado] === v("f-estado")) &&
+    (!v("f-nombre") || (c[COL.nombre]||"").toLowerCase().includes(v("f-nombre").toLowerCase()))
+  );
+}
+
+function limpiarFiltros() {
+  ["f-area","f-exp","f-localidad","f-estudios","f-edad","f-estado"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("f-nombre").value = "";
+  renderizar();
+}
+
+function renderizar() {
+  const lista = filtrados();
+  document.getElementById("contador").textContent = `${lista.length} candidato${lista.length !== 1 ? "s" : ""}`;
+  const grid = document.getElementById("grid");
+  if (!lista.length) { grid.innerHTML = `<div class="empty"><div class="icon">🔍</div>No hay candidatos con esos filtros.</div>`; return; }
+  grid.innerHTML = lista.map(tarjeta).join("");
+}
+
+function extraerLink(celda) {
+  if (!celda) return null;
+  const m = String(celda).match(/https?:\/\/[^\s"')]+/);
+  return m ? m[0] : null;
+}
+
+function linkWA(tel) {
+  if (!tel) return null;
+  const n = String(tel).replace(/\D/g, "").replace(/^0/, "");
+  if (!n || n.length < 7) return null;
+  const num = n.startsWith("54") ? n : "54" + n;
+  return `https://wa.me/${num}`;
+}
+
+function tarjeta(c) {
+  const fila = c["__fila"];
+  const pri = (c[COL.prioridad]||"").toUpperCase().trim();
+  const badgeClass = ["ALTA","MEDIA","BAJA"].includes(pri) ? `badge-${pri}` : "badge-default";
+  const cvLink = extraerLink(c[COL.cvForm]);
+  const waLink = linkWA(c[COL.tel]);
+  const meetLink = extraerLink(c[COL.entrevista]);
+
+  const opts = (arr, val) => arr.map(e => `<option value="${e}" ${(val||"")=== e?"selected":""}>${e||"—"}</option>`).join("");
+
+  return `
+  <div class="card">
+    <div class="card-header">
+      <div class="card-nombre">${c[COL.nombre]||"Sin nombre"}</div>
+      <span class="badge-prioridad ${badgeClass}">${pri||"—"}</span>
+    </div>
+    
+    <div class="card-area">🏷️ ${c[COL.area]||"—"}</div>
+    
+    <div class="card-info">
+      <div class="info-item"><span>📅</span><strong>${c[COL.edad]||"—"}</strong> años</div>
+      <div class="info-item"><span>📍</span><strong>${c[COL.localidad]||"—"}</strong></div>
+      <div class="info-item"><span>💼</span><strong>${c[COL.expAnios]||"—"}</strong></div>
+      <div class="info-item"><span>🎓</span><strong>${c[COL.estudios]||"—"}</strong></div>
+      <div class="info-item"><span>💰</span><strong>${c[COL.salario]||"—"}</strong></div>
+      <div class="info-item"><span>🕐</span><strong>${c[COL.disponibilidad]||"—"}</strong></div>
+    </div>
+    
+    ${c[COL.expDesc] ? `<div class="card-exp">💬 ${c[COL.expDesc]}</div>` : ""}
+
+    <div class="card-gestion">
+      <div class="gestion-item">
+        <label>📋 Estado</label>
+        <select onchange="guardar(${fila},'${COL.estado}',this.value,this)">${opts(ESTADOS, c[COL.estado])}</select>
+      </div>
+      <div class="gestion-item">
+        <label>⭐ Calificación</label>
+        <select onchange="guardar(${fila},'${COL.calificacion}',this.value,this)">${opts(CALIFICACIONES, c[COL.calificacion])}</select>
+      </div>
+      <div class="gestion-item">
+        <label>🔥 Prioridad</label>
+        <select onchange="guardar(${fila},'${COL.prioridad}',this.value,this)">${opts(PRIORIDADES, c[COL.prioridad])}</select>
+      </div>
+      <div class="gestion-item">
+        <label>📅 Incorporación</label>
+        <div style="font-size:0.8rem;padding:6px 0;color:var(--muted);font-weight:500">${c[COL.incorporacion]||"—"}</div>
+      </div>
+      <div class="gestion-item notas-item">
+        <label>📝 Notas de entrevista</label>
+        <textarea onblur="guardar(${fila},'${COL.notas}',this.value,this)">${c[COL.notas]||""}</textarea>
+      </div>
+      <div class="gestion-item notas-item">
+        <label>💬 Feedback</label>
+        <textarea onblur="guardar(${fila},'${COL.feedback}',this.value,this)">${c[COL.feedback]||""}</textarea>
+      </div>
+    </div>
+
+    <div class="card-acciones">
+      ${cvLink ? `<a href="${cvLink}" target="_blank" class="btn-accion btn-cv">📄 Ver CV</a>` : `<span class="btn-accion disabled">📄 Sin CV</span>`}
+      ${waLink ? `<a href="${waLink}" target="_blank" class="btn-accion btn-wa">💬 WhatsApp</a>` : `<span class="btn-accion disabled">💬 Sin tel</span>`}
+      ${meetLink ? `<a href="${meetLink}" target="_blank" class="btn-accion btn-meet">💻 Meet</a>` : `<span class="btn-accion disabled">💻 Sin meet</span>`}
+    </div>
+  </div>`;
+}
+
+async function guardar(fila, campo, valor, el) {
+  try {
+    await jsonp(`${PUENTE}?action=updateCandidato&fila=${fila}&campo=${encodeURIComponent(campo)}&valor=${encodeURIComponent(valor)}`);
+    if (el) { el.style.borderColor = "#27ae60"; setTimeout(() => el.style.borderColor = "", 1500); }
+  } catch(e) {
+    alert("Error al guardar. Intentá de nuevo.");
+  }
+}
+
+cargar();
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
