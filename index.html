@@ -355,13 +355,14 @@ const COL = {
   notas: "NOTAS DE ENTREVISTA",
   prioridad: "PRIORIDAD",
   whatsapp: "WHATSAPP",
+  whatsapp: "WHATSAPP",
   entrevista: "ENTREVISTA",
   feedback: "FEEDBACK WHATSAPP"
 };
 
-const ESTADOS = ["","NUEVO","EN PROCESO","ENTREVISTADO","SELECCIONADO","DESCARTADO","EN ESPERA"];
+const ESTADOS = ["","NUEVO","SCREENING","ENTREVISTA 1","RECHAZADO","ENTREVISTA 2","1º FILTRO TELEFONICO","TERNA FINALISTA"];
 const CALIFICACIONES = ["","⭐","⭐⭐","⭐⭐⭐","⭐⭐⭐⭐","⭐⭐⭐⭐⭐"];
-const PRIORIDADES = ["","ALTA","MEDIA","BAJA"];
+const PRIORIDADES = ["","URGENTE","STANDAR","RESERVA"];
 
 let todos = [];
 
@@ -508,14 +509,19 @@ function tarjeta(c) {
         <textarea onblur="guardar(${fila},'${COL.notas}',this.value,this)">${c[COL.notas]||""}</textarea>
       </div>
       <div class="gestion-item notas-item">
-        <label>💬 Feedback</label>
-        <textarea onblur="guardar(${fila},'${COL.feedback}',this.value,this)">${c[COL.feedback]||""}</textarea>
+        <label>💬 WhatsApp Coordinación</label>
+        <textarea onblur="guardar(${fila},'${COL.whatsapp}',this.value,this)">${c[COL.whatsapp]||"Hola! Te contacto de Conectando Talentos por tu postulación."}</textarea>
+      </div>
+      <div class="gestion-item notas-item">
+        <label>💬 Feedback WhatsApp ${c[COL.estado] === "RECHAZADO" ? "✅" : "🔒"}</label>
+        <textarea ${c[COL.estado] === "RECHAZADO" ? "" : "disabled"} onblur="guardar(${fila},'${COL.feedback}',this.value,this)" style="${c[COL.estado] === "RECHAZADO" ? "" : "background:#f5f5f5;color:#ccc;cursor:not-allowed;"}">${c[COL.feedback]||""}</textarea>
+        ${c[COL.estado] !== "RECHAZADO" ? `<small style="color:#999;font-size:0.7rem;margin-top:2px">Se habilita cuando ESTADO = RECHAZADO</small>` : ""}
       </div>
     </div>
 
     <div class="card-acciones">
       ${cvLink ? `<a href="${cvLink}" target="_blank" class="btn-accion btn-cv">📄 Ver CV</a>` : `<span class="btn-accion disabled">📄 Sin CV</span>`}
-      ${waLink ? `<a href="${waLink}" target="_blank" class="btn-accion btn-wa">💬 WhatsApp</a>` : `<span class="btn-accion disabled">💬 Sin tel</span>`}
+      ${waLink ? `<a href="${waLink}?text=Hola!%20Te%20contacto%20de%20Conectando%20Talentos%20por%20tu%20postulaci%C3%B3n." target="_blank" class="btn-accion btn-wa">💬 WhatsApp</a>` : `<span class="btn-accion disabled">💬 Sin tel</span>`}
       ${meetLink ? `<a href="${meetLink}" target="_blank" class="btn-accion btn-meet">💻 Meet</a>` : `<span class="btn-accion disabled">💻 Sin meet</span>`}
     </div>
   </div>`;
